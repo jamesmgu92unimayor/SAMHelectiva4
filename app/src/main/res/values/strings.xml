@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">SeguridadParaTuHogar</string>
+    <string name="username">Nombre Usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="login">Login</string>
+    <string name="register">Registrar</string>
+    <string name="logout">Cerrar Sesión</string>
+    <string name="advert">*La contraseña debe contener minimo 6 caracteres!*</string>
+</resources>

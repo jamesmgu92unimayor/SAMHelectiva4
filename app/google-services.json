@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "428014915824",
+    "firebase_url": "https://seguridad-para-tu-hogar-default-rtdb.firebaseio.com",
+    "project_id": "seguridad-para-tu-hogar",
+    "storage_bucket": "seguridad-para-tu-hogar.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:428014915824:android:38fad35170df6fb9777235",
+        "android_client_info": {
+          "package_name": "com.unimayor.seguridadparatuhogar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "428014915824-13mm9nc3r0sr2ese40ah93pbhmssqo87.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACLiB8CLtlfiAKZcGIa2gbrRbIrindbvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "428014915824-13mm9nc3r0sr2ese40ah93pbhmssqo87.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
