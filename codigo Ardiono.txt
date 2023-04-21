@@ -1,0 +1,136 @@
+/* Este código es para un sensor PIR conectado a un ESP2866 y que envía datos a Firebase */
+#include <Arduino.h>
+#if defined(ESP32)
+#include <WiFi.h>
+#include <FirebaseESP32.h>
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+#include <FirebaseESP8266.h>
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#include <WiFi.h>
+#include <FirebaseESP8266.h>
+#endif
+
+#include <addons/TokenHelper.h>
+
+#include <addons/RTDBHelper.h>
+
+#define WIFI_SSID "LAPTOP-EOEC3EVH"// Nombre de la red WiFi
+#define WIFI_PASSWORD "123456789"// Contraseña de la red WiFi
+
+#define API_KEY "AIzaSyACLiB8CLtlfiAKZcGIa2gbrRbIrindbvs"// Clave API de Firebase
+
+#define DATABASE_URL "seguridad-para-tu-hogar-default-rtdb.firebaseio.com"// URL de la base de datos de Firebase
+
+#define USER_EMAIL "krivas@gmail.com"// Correo electrónico del usuario de Firebase
+#define USER_PASSWORD "123456"// Contraseña del usuario de Firebase
+
+
+#define PIR_PIN 2// Pin donde se conecta el sensor PIR
+
+int pirValue;// Variable para almacenar el valor del sensor PIR
+
+FirebaseData fbdo;// Objeto para manejar la comunicación con Firebase
+
+FirebaseAuth auth; // Objeto para la autenticación en Firebase
+FirebaseConfig config; // Objeto para configurar la conexión a Firebase
+
+unsigned long sendDataPrevMillis = 0;// Variable para medir el tiempo transcurrido desde el último envío de datos
+
+unsigned long count = 0; // Variable para llevar un contador de envíos de datos
+
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+WiFiMulti multi;// Objeto para manejar múltiples conexiones WiFi en Raspberry Pi Pico
+#endif
+
+void setup()
+{
+  pinMode(PIR_PIN, INPUT);// Se configura el pin del sensor PIR como entrada
+  Serial.begin(115200);// Se inicia la comunicación serial a 115200 baudios
+
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  multi.addAP(WIFI_SSID, WIFI_PASSWORD); // Se agregan las credenciales de la red WiFi
+  multi.run(); // Se inicia la conexión WiFi
+#else
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD); // Se conecta a la red WiFi
+#endif
+
+  Serial.print("Connecting to Wi-Fi");// Se indica que se está intentando conectar a la red WiFi
+  unsigned long ms = millis();// Se guarda el tiempo actual
+  while (WiFi.status() != WL_CONNECTED)// Se espera a que se establezca la conexión WiFi
+  {
+    Serial.print(".");// Se indica que se está esperando
+    delay(300);// Se espera 300 milisegundos antes de verificar de nuevo
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+    if (millis() - ms > 10000)// Si han pasado más de 10 segundos
+      break;// Se sale del ciclo
+#endif
+  }
+  Serial.println();// Se agrega un salto de línea
+  Serial.print("Connected with IP: ");// Se indica que se ha establecido la conexión WiFi
+  Serial.println(WiFi.localIP());//Se muestra la dirección IP
+  Serial.println();// Se agrega un salto de línea
+
+  Serial.printf("Firebase Client v%s\n\n", FIREBASE_CLIENT_VERSION);//Se imprime la versión del cliente de Firebase por medio de un objeto Serial.
+
+/*Se establecen las credenciales de Firebase para el proyecto, 
+ * incluyendo la clave API, el correo electrónico y la contraseña del usuario, 
+la URL de la base de datos y una función de devolución de llamada para el estado del token.*/
+  config.api_key = API_KEY;
+  auth.user.email = USER_EMAIL;
+  auth.user.password = USER_PASSWORD;
+  config.database_url = DATABASE_URL;
+  config.token_status_callback = tokenStatusCallback;
+
+//Si la plataforma es un Raspberry Pi Pico W, se configura la conexión Wi-Fi.
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  config.wifi.clearAP();
+  config.wifi.addAP(WIFI_SSID, WIFI_PASSWORD);
+#endif
+
+  //Se inicializa la biblioteca Firebase con las credenciales y la configuración previamente establecidas.
+  Firebase.begin(&config, &auth);
+
+  //Se establece la conexión Wi-Fi y se habilita la reconexión automática.
+  Firebase.reconnectWiFi(true);
+
+  //Se establece el número de dígitos después del punto decimal al actualizar los valores numéricos.
+  Firebase.setDoubleDigits(5);
+
+}
+
+void loop(){
+  //Se crea un objeto FirebaseJson para manipular los datos JSON que se enviarán a la base de datos.
+  FirebaseJson json;
+
+
+/*Si la conexión a Firebase está lista y ha pasado más de 15 segundos desde la última actualización o es 
+la primera vez que se ejecuta el programa, se procede a enviar nuevos datos.*/
+  if (Firebase.ready() && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)){
+    //Se lee el estado del sensor PIR.
+    pirValue = digitalRead(PIR_PIN);
+
+    /*Si el sensor PIR detecta movimiento, se agrega un nuevo registro 
+     * con la hora actual en el nodo "movimiento" 
+     * de la base de datos. Si no hay movimiento, 
+     * se agrega un registro al nodo "nomovimientos". 
+    En ambos casos, se imprime un mensaje en la consola.*/
+    if (pirValue == HIGH) {
+      Serial.println("¡Movimiento detectado!");
+      json.add(String(count), "¡Movimiento detectado!");
+      Serial.printf("Update node... %s\n", Firebase.updateNode(fbdo, F("/test/json/movimiento"), json) ? "ok" : fbdo.errorReason().c_str());
+      delay(1000); // Espera 1 segundo antes de enviar otro valor
+    } else if(pirValue == LOW) {
+      Serial.println("¡No detecta Movimiento!");
+      json.add(String(count), "¡Movimiento detectado!");
+      Serial.printf("Update node... %s\n", Firebase.updateNode(fbdo, F("/test/json/nomovimientos"), json) ? "ok" : fbdo.errorReason().c_str());
+    }
+
+    //Se actualiza la variable "sendDataPrevMillis" con el tiempo actual.
+    sendDataPrevMillis = millis();
+    
+    Serial.println();//// Se agrega un salto de línea
+
+    count++;//Se incrementa la variable "count" para el siguiente registro.
+  }
+}
