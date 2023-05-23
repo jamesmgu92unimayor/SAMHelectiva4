@@ -6,4 +6,6 @@
     <string name="register">Registrar</string>
     <string name="logout">Cerrar Sesión</string>
     <string name="advert">*La contraseña debe contener minimo 6 caracteres!*</string>
+    <string name="name_one">Alerta!: </string>
+    <string name="name_two">Foto: </string>
 </resources>

@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
     /**
@@ -34,12 +35,29 @@ class MainActivity : AppCompatActivity() {
         username = findViewById(R.id.username)
         password = findViewById(R.id.password)
 
-
+        /**
+         * Llamado a la función notification()
+         * **/
+        notification()
         /**
          * Llamado a la función setup()
          * **/
         setup()
 
+    }
+
+    /**
+     * función notification() se encarga de obtener el token
+     * de indeitificacion de usuario unico para el envio de
+     * notificaciones personalizadas desde firebase al movil
+     * **/
+    private fun notification() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                println("Este es el token del dispositivo: $token")
+            }
+        }
     }
 
     /**
