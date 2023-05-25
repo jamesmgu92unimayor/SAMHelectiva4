@@ -8,4 +8,6 @@
     <string name="advert">*La contraseña debe contener minimo 6 caracteres!*</string>
     <string name="name_one">Alerta!: </string>
     <string name="name_two">Foto: </string>
+    <string name="title">Alerta!! </string>
+    <string name="body">"Tu hogar esta en peligro, por favor comunícate con las autoridades competentes cuanto antes!" </string>
 </resources>

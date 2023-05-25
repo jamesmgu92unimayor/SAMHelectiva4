@@ -1,5 +1,6 @@
 package com.unimayor.seguridadparatuhogar
 
+
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -10,11 +11,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.unimayor.seguridadparatuhogar.adapter.MyAdapter
+import kotlin.collections.ArrayList
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var logout : Button
     private lateinit var recycler : RecyclerView
+    private lateinit var myFirebaseMessagingService: MyFirebaseMessagingService
 
     // Obtén una referencia a la instancia de la base de datos
     val database: FirebaseDatabase = FirebaseDatabase.getInstance()
@@ -23,6 +26,8 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+        myFirebaseMessagingService = MyFirebaseMessagingService()
 
         logout = findViewById(R.id.logout)
         recycler = findViewById(R.id.recycler_view)
@@ -45,8 +50,15 @@ class HomeActivity : AppCompatActivity() {
 
                     val value = dataSnapshot.value
 
-                    val adapter = MyAdapter(value as ArrayList<String>)
-                    recycler.adapter = adapter
+                    value.let {
+                        val adapter = MyAdapter(it as ArrayList<String>)
+                        recycler.adapter = adapter
+
+                        val title = getString(R.string.title)
+                        val body = getString(R.string.body)
+
+                        myFirebaseMessagingService.showNotification(context, title, body)
+                    }
 
                 } else {
                     Log.e("Firebase", "Error no existe el nodo que estas buscando!")
